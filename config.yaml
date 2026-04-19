@@ -1,0 +1,39 @@
+# Cycle-Crack Configuration — v2 (Paper-Accurate)
+
+# Paths
+crack_dir: "data/crack/"
+normal_dir: "data/noncrack/"
+save_dir: "checkpoints/"
+
+# Training [paper §IV-B]
+batch_size: 16
+num_epochs: 100
+lr_G: 0.0001        # 1e-4 for Generator
+lr_D: 0.0004        # 4e-4 for Discriminator
+beta1: 0.5
+beta2: 0.999
+scheduler: "cosine"  # CosineAnnealingLR
+image_size: 256
+num_workers: 4
+
+# Model parameters
+ngf: 64
+ndf: 64
+
+# Loss weights [paper Eq.2 and §IV-B]
+lambda_idt: 0.5
+lambda_cycle: 10.0
+lambda_adv: 1.0
+lambda_text: 2.0    # 2.0, NOT 5.0
+lambda_region: 1.0  # 1.0, NOT 10.0
+
+# Dataset [paper §IV-A]
+crack_pixel_threshold: 100  # patch must have >100 crack pixels
+stride_crack500: 256
+stride_deepcrack: 128
+stride_cfd: 128
+
+# Inference [paper §III-B]
+bilateral_d: 9
+bilateral_sigma_color: 75
+bilateral_sigma_space: 75
