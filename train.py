@@ -113,8 +113,7 @@ def run_training():
                 I_N_rec  = G_E(I_N_fake)  # re-normal reconstruction
 
                 # Identity
-                I_C_idt = G_E(I_N)        # G_E(I_N) should ≈ I_N
-                I_N_idt = G_A(I_C)        # G_A(I_C) should ≈ I_C
+                # Computed using I_C_fake and I_N_fake directly [paper Eq.3]
 
             # ── Step 1: Update Discriminators ─────────────────────────────
             opt_D.zero_grad()
@@ -149,8 +148,8 @@ def run_training():
                             + criterion_cycle(I_N_rec, I_N))
 
                 # Identity [paper Eq.3]
-                loss_idt = (criterion_idt(I_C_idt, I_N)
-                          + criterion_idt(I_N_idt, I_C))
+                loss_idt = (criterion_idt(I_C_fake, I_N)
+                          + criterion_idt(I_N_fake, I_C))
 
                 # Region Loss — G_E branch only [paper Eq.11-12]
                 _, feat_real = D_N(I_N)

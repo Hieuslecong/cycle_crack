@@ -114,8 +114,7 @@ class CycleCrackTrainer:
                 fake_C = self.G_A(I_N)
                 rec_N  = self.G_E(fake_C)
                 # Identity
-                idt_N  = self.G_E(I_N)
-                idt_C  = self.G_A(I_C)
+                # Computed using fake_N and fake_C directly [paper Eq.3]
 
             # --- Step 1: Optimize Discriminators ---
             self.opt_D.zero_grad()
@@ -128,7 +127,7 @@ class CycleCrackTrainer:
                 p_real_C, _ = self.D_C(I_C)
                 p_fake_C, _ = self.D_C(fake_C.detach())
                 l_DC = self.crit_adv(p_real_C, True) + self.crit_adv(p_fake_C, False)
-                loss_D = (l_DN + l_DC) * 0.5
+                loss_D = l_DN + l_DC
             
             self.scaler_D.scale(loss_D).backward()
             self.scaler_D.step(self.opt_D)
@@ -147,8 +146,8 @@ class CycleCrackTrainer:
                           C.LAMBDA_N * self.crit_cycle(rec_N, I_N)
                 
                 # Identity
-                l_idt = C.LAMBDA_GE * self.crit_idt(idt_N, I_N) + \
-                        C.LAMBDA_GA * self.crit_idt(idt_C, I_C)
+                l_idt = C.LAMBDA_GE * self.crit_idt(fake_N, I_N) + \
+                        C.LAMBDA_GA * self.crit_idt(fake_C, I_C)
                 
                 # Region Consistency (G_E branch only)
                 _, f_real_N = self.D_N(I_N)
