@@ -57,8 +57,8 @@ class CycleCrackTrainer:
         
         # 6. Tools
         self.writer = SummaryWriter(log_dir=os.path.join(C.SAVE_DIR, 'logs'))
-        self.scaler_G = torch.cuda.amp.GradScaler()
-        self.scaler_D = torch.cuda.amp.GradScaler()
+        self.scaler_G = torch.amp.GradScaler('cuda')
+        self.scaler_D = torch.amp.GradScaler('cuda')
         self.step = 0
         self.start_epoch = 0
 
@@ -106,7 +106,7 @@ class CycleCrackTrainer:
             I_N = batch['normal'].to(self.device)
 
             # --- Forward Pass ---
-            with torch.cuda.amp.autocast():
+            with torch.amp.autocast('cuda'):
                 # Domain C -> N -> C
                 fake_N = self.G_E(I_C)
                 rec_C  = self.G_A(fake_N)
@@ -118,7 +118,7 @@ class CycleCrackTrainer:
 
             # --- Step 1: Optimize Discriminators ---
             self.opt_D.zero_grad()
-            with torch.cuda.amp.autocast():
+            with torch.amp.autocast('cuda'):
                 # D_N: predicts real Normal vs Fake Normal (from C)
                 p_real_N, _ = self.D_N(I_N)
                 p_fake_N, _ = self.D_N(fake_N.detach())
@@ -135,7 +135,7 @@ class CycleCrackTrainer:
 
             # --- Step 2: Optimize Generators ---
             self.opt_G.zero_grad()
-            with torch.cuda.amp.autocast():
+            with torch.amp.autocast('cuda'):
                 # Adversarial
                 pg_fake_N, _ = self.D_N(fake_N)
                 pg_fake_C, _ = self.D_C(fake_C)
@@ -157,7 +157,7 @@ class CycleCrackTrainer:
                 l_region = self.crit_region(fake_N, I_C, f_real_N.detach(), f_fake_N)
 
             # Texture loss (fp32 to prevent VGG overflow)
-            with torch.cuda.amp.autocast(enabled=False):
+            with torch.amp.autocast('cuda', enabled=False):
                 l_text = self.crit_text(rec_C.float(), I_C.float()) + \
                          self.crit_text(rec_N.float(), I_N.float())
 
