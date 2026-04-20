@@ -145,14 +145,16 @@ class CycleCrackTrainer:
                 l_cycle = C.LAMBDA_C * self.crit_cycle(rec_C, I_C) + \
                           C.LAMBDA_N * self.crit_cycle(rec_N, I_N)
                 
-                # Identity
-                l_idt = C.LAMBDA_GE * self.crit_idt(fake_N, I_N) + \
-                        C.LAMBDA_GA * self.crit_idt(fake_C, I_C)
+                # Identity (Correcting paper typo to standard CycleGAN identity, avoiding forced memorization of random pairings)
+                idt_N = self.G_E(I_N)
+                idt_C = self.G_A(I_C)
+                l_idt = C.LAMBDA_GE * self.crit_idt(idt_N, I_N) + \
+                        C.LAMBDA_GA * self.crit_idt(idt_C, I_C)
                 
                 # Region Consistency (G_E branch only)
                 _, f_real_N = self.D_N(I_N)
                 _, f_fake_N = self.D_N(fake_N)
-                l_region = self.crit_region(fake_N, I_C, f_real_N.detach(), f_fake_N.detach())
+                l_region = self.crit_region(fake_N, I_C, f_real_N.detach(), f_fake_N)
 
             # Texture loss (fp32 to prevent VGG overflow)
             with torch.cuda.amp.autocast(enabled=False):

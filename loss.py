@@ -131,9 +131,9 @@ class StyleLoss(nn.Module):
         std  = torch.tensor([0.229,0.224,0.225], device=x.device).view(1,3,1,1)
         xn = ((x+1)/2 - mean) / std
         yn = ((y+1)/2 - mean) / std
-        # [not in paper]: style_loss * 1e-3 — Gram MSE overflows fp16 AMP without it.
+        # Texture loss is computed in FP32 so no manual downscaling is needed to prevent overflow
         return F.mse_loss(self.gram(self.vgg_layer3(xn)),
-                          self.gram(self.vgg_layer3(yn))) * 1e-3
+                          self.gram(self.vgg_layer3(yn)))
 
 
 class TextureLoss(nn.Module):
